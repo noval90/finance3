@@ -33,8 +33,21 @@ class MarketData:
     self.ticker_tuple = tuple(ticker_list)
     self.return_matrix = np.array(return_list, dtype=np.float64).T
 
-  def getSlice(self, min_date, max_date):
+  def getSlice(
+      self,
+      min_date=None,
+      max_date=None,
+      tickers=None):
     """Get a slice of data from within the set."""
+    if min_date is None:
+      min_date = min(self.date_tuple)
+
+    if max_date is None:
+      max_date = max(self.date_tuple)
+
+    if tickers is None:
+      tickers = self.ticker_tuple
+
     if max_date > max(self.date_tuple) or min_date < min(self.date_tuple):
       raise ValueError(
         'Min and Max dates must be within %d-%d' % (
@@ -42,5 +55,8 @@ class MarketData:
 
     min_offset = min_date - min(self.date_tuple)
     max_offset = max_date - min(self.date_tuple) + 1
-    new_array = self.return_matrix[min_offset:max_offset]
+
+    selections = [ticker in tickers for ticker in self.ticker_tuple]
+
+    new_array = self.return_matrix[min_offset:max_offset, selections]
     return new_array
